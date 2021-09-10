@@ -1,20 +1,52 @@
 import express from "express";
 import HttpError from "http-errors";
+import httpStatus from "http-status";
 import HttpStatus from "http-status";
-import planets from "../data/planets.js";
+
 
 import PLANETS from "../data/planets.js";
 const router = express.Router();
 
 class PlanetsRoutes {
     constructor() {
-        router.get("/planets", this.getAll );
-        router.get("/planets/:idPlanet", this.getOne);       
-        router.post("/planets", this.post); 
+        router.get("/", this.getAll );
+        router.get("/idPlanet", this.getOne);       
+        router.post("/", this.post);
+        router.delete("/:idPlanet", this.delete);
+        router.patch('/:idPlanet', this.patch); 
+        router.put('/:idPlanet', this.put); 
+    }
+
+    patch(red,res,next){
+        return next(HttpError.NotImplemented());
+    }
+
+    put(red,res,next){
+        return next(HttpError.MethodNotAllowed()); 
+    }
+
+
+    delete(req,res,next){
+        const index = PLANETS.findIndex(p => p.id == req.params.idPlanet);
+
+        if(index === -1){
+            return next(HttpError.NotFound(`La planète avec l'identifiant ${req.params.id} n'existe pas`))
+        } else {
+            PLANETS.splice(index, 1);
+            res.status(204).end(); // NO content
+        }
     }
 
     post(req, res, next){
-        
+        const newPlanet = req.body;
+
+        const planet = PLANETS.find(p => p.id == newPlanet.id);
+
+        if(planet){
+            //Doublons detected ! 
+            return next(HttpError.Conflict(`La planète avec l'identifiant ${newPlanet.id} existe déjà`));
+        } 
+
     }
 
     getAll(req, res, next){
